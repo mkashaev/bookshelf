@@ -17,8 +17,20 @@ class App extends React.Component {
     this.state = {
       totalCounter: 0,
       readingCounter: 0,
-      readCounter: 0
+      readCounter: 0,
+      isAddBookVisible: false,
+      textInput: '',
     };
+  }
+
+  showAddNewBook = () => {
+    this.setState((state) => ({
+      isAddBookVisible: !state.isAddBookVisible,
+    }));
+  }
+
+  addBook = () => {
+    alert(this.state.textInput);
   }
 
   render() {
@@ -30,40 +42,45 @@ class App extends React.Component {
             <Text style={styles.title}>Book Worm</Text>
           </View>
           <View style={{ flex: 1}}>
-            <View style={{ height: 50, flexDirection: 'row' }}>
-              <TextInput
-                style={{
-                  flex: 1,
-                  backgroundColor: '#ececec',
-                  paddingLeft: 5
-                }}
-                placeholder="Enter book name"
-                placeholderTextColor="gray"
-              />
-              <TouchableOpacity>
-                <View style={{
-                  height: 50,
-                  width: 50,
-                  backgroundColor: '#a5deba',
-                  alignItems: 'center',
-                  justifyContent: 'center' 
-                }}>
-                  <Ionicons name="md-checkmark" color="white" size={32} />
-                </View>
-              </TouchableOpacity>
-              <TouchableOpacity>
-                <View style={{
-                  height: 50,
-                  width: 50,
-                  backgroundColor: '#deada5',
-                  alignItems: 'center',
-                  justifyContent: 'center' 
-                }}>
-                  <Ionicons name="md-close" color="white" size={32} />
-                </View>
-              </TouchableOpacity>
-            </View>
+            { this.state.isAddBookVisible && (
+              <View style={{ height: 50, flexDirection: 'row' }}>
+                <TextInput
+                  onChangeText={(text) => this.setState({textInput: text})}
+                  style={{
+                    flex: 1,
+                    backgroundColor: '#ececec',
+                    paddingLeft: 5
+                  }}
+                  placeholder="Enter book name"
+                  placeholderTextColor="gray"
+                />
+                <TouchableOpacity onPress={this.addBook}>
+                  <View style={{
+                    height: 50,
+                    width: 50,
+                    backgroundColor: '#a5deba',
+                    alignItems: 'center',
+                    justifyContent: 'center' 
+                  }}>
+                    <Ionicons name="md-checkmark" color="white" size={32} />
+                  </View>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={this.showAddNewBook}>
+                  <View style={{
+                    height: 50,
+                    width: 50,
+                    backgroundColor: '#deada5',
+                    alignItems: 'center',
+                    justifyContent: 'center' 
+                  }}>
+                    <Ionicons name="md-close" color="white" size={32} />
+                  </View>
+                </TouchableOpacity>
+              </View>
+            )}
+            
             <TouchableOpacity
+              onPress={this.showAddNewBook}
               style={{
                 position: 'absolute',
                 bottom: 20,
