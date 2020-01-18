@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
+import PropTypes from 'prop-types';
 
 
 const BookCount = (props) => {
@@ -11,6 +12,15 @@ const BookCount = (props) => {
     </View>
   )
 }
+
+BookCount.propTypes = {
+  total: PropTypes.number,
+  title: PropTypes.string.isRequired
+};
+
+BookCount.defaultProps = {
+  title: 'Title'
+};
 
 const styles = StyleSheet.create({
   bottomButtons: {
