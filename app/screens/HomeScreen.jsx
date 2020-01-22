@@ -8,8 +8,8 @@ import {
   FlatList
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import BookCount from '../app/components/BookCount';
-import CustomActionButton from '../app/components/CustomActionButton';
+import BookCount from '../components/BookCount';
+import CustomActionButton from '../components/CustomActionButton';
 
 
 class HomeScreen extends React.Component {
