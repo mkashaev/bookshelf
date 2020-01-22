@@ -10,7 +10,10 @@ import { Ionicons } from '@expo/vector-icons';
 import WelcomeScreen from './app/screens/AppSwitchNavigator/WelcomeScreen';
 import HomeScreen from './app/screens/HomeScreen';
 import SignUpScreen from './app/screens/SignUpScreen';
+import LoginScreen from './app/screens/LoginScreen';
 import SettingsScreen from './app/screens/SettingsScreen';
+import CustomDrawerComponent from './app/screens/DrawerNavigator/CustomDrawerComponent';
+import colors from './assets/colors';
 
 const LoginStackNavigator = createStackNavigator({
   WelcomeScreen: {
@@ -19,7 +22,17 @@ const LoginStackNavigator = createStackNavigator({
       header: null
     }
   },
-  SignUpScreen
+  LoginScreen: {
+    screen: LoginScreen,
+    navigationOptions: {}
+  }
+}, {
+  mode: 'modal',
+  defaultNavigationOptions: {
+    headerStyle: {
+      backgroundColor: colors.bgMain
+    }
+  }
 });
 
 const AppDrawerNavigator = createDrawerNavigator({
@@ -37,6 +50,8 @@ const AppDrawerNavigator = createDrawerNavigator({
       drawerIcon: () => <Ionicons name="md-settings" size={24} />
     }
   }
+}, {
+  contentComponent: CustomDrawerComponent 
 })
 
 

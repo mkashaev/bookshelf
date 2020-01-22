@@ -36,7 +36,10 @@ const CustomActionButton = ({ children, onPress, style, position }) => {
 CustomActionButton.propTypes = {
   children: PropTypes.element.isRequired,
   onPress: PropTypes.func.isRequired,
-  style: PropTypes.object
+  style: PropTypes.oneOfType([
+    PropTypes.object,
+    PropTypes.array
+  ])
 };
 
 CustomActionButton.defaultProps = {
