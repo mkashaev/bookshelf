@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Component } from 'react';
 import { View } from 'react-native';
 import {
   createAppContainer,
@@ -9,10 +9,12 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import WelcomeScreen from './app/screens/AppSwitchNavigator/WelcomeScreen';
 import HomeScreen from './app/screens/HomeScreen';
-import SignUpScreen from './app/screens/SignUpScreen';
 import LoginScreen from './app/screens/LoginScreen';
 import SettingsScreen from './app/screens/SettingsScreen';
+import LoadingScreen from './app/screens/AppSwitchNavigator/LoadingScreen';
 import CustomDrawerComponent from './app/screens/DrawerNavigator/CustomDrawerComponent';
+import * as firebase from 'firebase/app';
+import { firebaseConfig } from './config/config';
 import colors from './assets/colors';
 
 const LoginStackNavigator = createStackNavigator({
@@ -56,12 +58,28 @@ const AppDrawerNavigator = createDrawerNavigator({
 
 
 const AppSwitchNavigator = createSwitchNavigator({
+  LoadingScreen,
   LoginStackNavigator,
   AppDrawerNavigator
 });
 
 const AppContainer = createAppContainer(AppSwitchNavigator);
 
-const App = () => <AppContainer />
+class App extends Component {
+  constructor(props) {
+    super(props);
+    this.initializeFirebase();
+  }
+
+  initializeFirebase = () => {
+    firebase.initializeApp(firebaseConfig);
+  }
+
+  render() {
+    return (
+      <AppContainer />
+    )
+  }
+}
 
 export default App;
