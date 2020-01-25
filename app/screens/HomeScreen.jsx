@@ -5,11 +5,13 @@ import {
   View,
   SafeAreaView,
   TextInput,
-  FlatList
+  FlatList,
+  Image
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import BookCount from '../components/BookCount';
 import CustomActionButton from '../components/CustomActionButton';
+import ListItem from '../components/ListItem';
 import * as firebase from 'firebase/app';
 import 'firebase/database';
 import { snapshotToArray } from '../utils/firebaseHelper';
@@ -74,10 +76,7 @@ class HomeScreen extends React.Component {
         .equalTo(book)
         .once('value');
 
-      console.log('S type: ', typeof snapshot);
-
       if (snapshot.exists()) {
-        console.log('Snap: ', snapshot);
         alert('Unable to add as book already exists');
       } else {
         const { key } = await firebase
@@ -105,33 +104,40 @@ class HomeScreen extends React.Component {
     }
   }
 
-  markAsRead = (selectedBook, index) => {
-    let books = this.state.books.map((book) => {
-      if (book.name === selectedBook.name) {
-        return {...book, read: true};
-      }
-      return book;
-    });
+  markAsRead = async (selectedBook, index) => {
+    try {
+      await firebase
+        .database()
+        .ref('books')
+        .child(this.state.currentUser.uid)
+        .child(selectedBook.key)
+        .update({ read: true });
 
-    let booksReading = this.state.booksReading.filter(
-      (book) => book.name !== selectedBook.name
-    );
-    this.setState((state) => ({
-      books,
-      booksReading,
-      booksRead: [
-        ...state.booksRead,
-        {name: selectedBook.name, read: true}
-      ]
-    }));
+      let books = this.state.books.map((book) => {
+        if (book.name === selectedBook.name) {
+          return {...book, read: true};
+        }
+        return book;
+      });
+  
+      let booksReading = this.state.booksReading.filter(
+        (book) => book.name !== selectedBook.name
+      );
+      this.setState((state) => ({
+        books,
+        booksReading,
+        booksRead: [
+          ...state.booksRead,
+          {name: selectedBook.name, read: true}
+        ]
+      }));
+    } catch (err) {
+      alert(err);
+    }
   }
 
   renderItem = (item, index) => (
-    <View style={{ height: 50, flexDirection: 'row' }}>
-      <View style={{flex: 1, justifyContent: 'center', paddingLeft: 5}}>
-        <Text>{ item.name }</Text>
-      </View>
-      { console.log('Item: ', item)}
+    <ListItem item={item}>
       {
         item.read ? (
           <Ionicons name="md-checkmark" color={colors.logoColor} size={42} />
@@ -145,8 +151,7 @@ class HomeScreen extends React.Component {
           </CustomActionButton>
         )
       }
-
-    </View>
+    </ListItem>
   )
 
   render() {
