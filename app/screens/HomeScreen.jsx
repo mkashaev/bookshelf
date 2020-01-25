@@ -10,19 +10,52 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import BookCount from '../components/BookCount';
 import CustomActionButton from '../components/CustomActionButton';
+import * as firebase from 'firebase/app';
+import 'firebase/database';
+import { snapshotToArray } from '../utils/firebaseHelper';
+import colors from '../../assets/colors';
 
 
 class HomeScreen extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      totalCounter: 0,
-      readingCounter: 0,
-      readCounter: 0,
+      currentUser: {},
       isAddBookVisible: false,
       textInput: '',
-      books: []
+      books: [],
+      booksReading: [],
+      booksRead: []
     };
+  }
+
+  componentDidMount = async () => {
+    this.getCurrentUser();
+  }
+
+  getCurrentUser = async () => {
+    const { navigation } = this.props;
+    const user = navigation.getParam('user');
+    const currentUserData = await firebase
+      .database()
+      .ref('users')
+      .child(user.uid)
+      .once('value');
+
+    const books = await firebase
+      .database()
+      .ref('books')
+      .child(user.uid)
+      .once('value')
+
+    const booksArray = snapshotToArray(books);
+    
+    this.setState({
+      currentUser: currentUserData.val(),
+      books: booksArray,
+      booksReading: booksArray.filter((book) => !book.read),
+      booksRead: booksArray.filter((book) => book.read)
+    });
   }
 
   showAddNewBook = () => {
@@ -31,46 +64,97 @@ class HomeScreen extends React.Component {
     }));
   }
 
-  addBook = (book) => {
-    this.setState((state, props) => ({
-      books: [...state.books, book],
-      totalCounter: state.totalCounter + 1,
-      readingCounter: state.readCounter + 1 
-    }), () => {
-      console.log(this.state.books);
-    });
+  addBook = async (book) => {
+    try {
+      const snapshot = await firebase
+        .database()
+        .ref('books')
+        .child(this.state.currentUser.uid)
+        .orderByChild('name')
+        .equalTo(book)
+        .once('value');
+
+      console.log('S type: ', typeof snapshot);
+
+      if (snapshot.exists()) {
+        console.log('Snap: ', snapshot);
+        alert('Unable to add as book already exists');
+      } else {
+        const { key } = await firebase
+        .database()
+        .ref('books')
+        .child(this.state.currentUser.uid)
+        .push();
+
+        await firebase
+          .database()
+          .ref('books')
+          .child(this.state.currentUser.uid)
+          .child(key)
+          .set({ name: book, read: false });
+
+        this.setState((state) => ({
+          books: [...state.books, {name: book, read: false}],
+          booksReading: [...state.booksReading, {name: book, read: false}],
+          isAddNewBookVisible: false,
+        }))
+      }
+    } catch(err) {
+      alert(err);
+      console.log(err);
+    }
   }
 
   markAsRead = (selectedBook, index) => {
-    let newList = this.state.books.filter((book) => book !== selectedBook);
+    let books = this.state.books.map((book) => {
+      if (book.name === selectedBook.name) {
+        return {...book, read: true};
+      }
+      return book;
+    });
+
+    let booksReading = this.state.booksReading.filter(
+      (book) => book.name !== selectedBook.name
+    );
     this.setState((state) => ({
-      books: newList,
-      readingCounter: state.readingCounter - 1,
-      readCounter: state.readCounter - 1
+      books,
+      booksReading,
+      booksRead: [
+        ...state.booksRead,
+        {name: selectedBook.name, read: true}
+      ]
     }));
   }
 
   renderItem = (item, index) => (
     <View style={{ height: 50, flexDirection: 'row' }}>
       <View style={{flex: 1, justifyContent: 'center', paddingLeft: 5}}>
-        <Text>{ item }</Text>
+        <Text>{ item.name }</Text>
       </View>
-      <CustomActionButton
-        style={{ width: 100, backgroundColor: '#a5deba'}}
-        onPress={() => this.markAsRead(item, index)}
-      >
-        <Text style={{ fontWeight: 'bold', color: 'white'}}>Mark as Read</Text>
-      </CustomActionButton>
+      { console.log('Item: ', item)}
+      {
+        item.read ? (
+          <Ionicons name="md-checkmark" color={colors.logoColor} size={42} />
+        )
+        : (
+          <CustomActionButton
+            style={{ width: 100, backgroundColor: '#a5deba'}}
+            onPress={() => this.markAsRead(item, index)}
+          >
+            <Text style={{ fontWeight: 'bold', color: 'white'}}>Mark as Read</Text>
+          </CustomActionButton>
+        )
+      }
+
     </View>
   )
 
   render() {
     const { 
-      totalCounter, 
-      readingCounter, 
-      readCounter, 
       textInput,
-      books
+      books,
+      booksReading,
+      booksRead
     } = this.state;
     return (
       <View style={styles.container}>
@@ -126,9 +210,9 @@ class HomeScreen extends React.Component {
           </View>
           
           <View style={styles.bottom}>
-            <BookCount title="Total" total={totalCounter} />
-            <BookCount title="Reading" total={readingCounter} />
-            <BookCount title="Read" total={readCounter} />
+            <BookCount title="Total" total={books.length} />
+            <BookCount title="Reading" total={booksReading.length} />
+            <BookCount title="Read" total={booksRead.length} />
           </View>
         <SafeAreaView />
       </View>

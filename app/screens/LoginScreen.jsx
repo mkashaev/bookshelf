@@ -58,6 +58,7 @@ class Login extends Component {
         const resp = await firebase.auth().createUserWithEmailAndPassword(email, pass);
         if (resp) {
           this.setState({ isLoading: false });
+          this.props.navigation.navigate('LoadingScreen');
         }
       } catch (err) {
         this.setState({ isLoading: false });
